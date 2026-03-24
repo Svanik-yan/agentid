@@ -1,16 +1,6 @@
 import Link from 'next/link'
 import { type Locale, getDictionary } from '@/lib/i18n'
-
-const EXAMPLE_AGENT = {
-  name: 'WeatherBot',
-  slug: 'weather-bot',
-  provider: 'Acme AI',
-  description: 'Real-time weather data for any location. Supports natural language queries and structured API calls.',
-  protocols: ['A2A', 'MCP'],
-  capabilities: ['weather-lookup', 'forecast', 'alerts'],
-  tags: ['weather', 'data', 'utility'],
-  pricing: 'freemium' as const,
-}
+import { supabaseAdmin } from '@/lib/supabase-server'
 
 function ProtocolBadge({ protocol }: { protocol: string }) {
   const colors: Record<string, string> = {
@@ -25,38 +15,12 @@ function ProtocolBadge({ protocol }: { protocol: string }) {
   )
 }
 
-function ExampleCard({ t }: { t: ReturnType<typeof getDictionary> }) {
-  return (
-    <div className="mx-auto w-full max-w-sm rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center gap-3">
-        <div
-          className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
-          style={{ backgroundColor: 'hsl(200, 65%, 55%)' }}
-        >
-          W
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-[var(--color-primary)]">{EXAMPLE_AGENT.name}</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">{t.by} {EXAMPLE_AGENT.provider}</p>
-        </div>
-      </div>
-      <p className="mb-4 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-        {EXAMPLE_AGENT.description}
-      </p>
-      <div className="mb-3 flex flex-wrap gap-1.5">
-        {EXAMPLE_AGENT.protocols.map((p) => (
-          <ProtocolBadge key={p} protocol={p} />
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {EXAMPLE_AGENT.capabilities.map((c) => (
-          <span key={c} className="rounded-[var(--radius-sm)] bg-[var(--color-surface-alt)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">
-            {c}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
+function generateAvatarColor(slug: string): string {
+  let hash = 0
+  for (let i = 0; i < slug.length; i++) {
+    hash = slug.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`
 }
 
 type Props = { params: Promise<{ lang: string }> }
@@ -65,6 +29,15 @@ export default async function HomePage({ params }: Props) {
   const { lang } = await params
   const locale = (lang === 'zh' ? 'zh' : 'en') as Locale
   const t = getDictionary(locale)
+
+  const { data: agents, count } = await supabaseAdmin
+    .from('agents')
+    .select('id, slug, name, provider, description, avatar_url, protocols, capabilities, tags, pricing, view_count', { count: 'exact' })
+    .order('view_count', { ascending: false, nullsFirst: false })
+    .limit(6)
+
+  const featured = agents || []
+  const totalCount = count || 0
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
@@ -76,6 +49,11 @@ export default async function HomePage({ params }: Props) {
         <p className="mx-auto mb-8 max-w-xl text-lg text-[var(--color-text-secondary)]">
           {t.heroDescription}
         </p>
+        {totalCount > 0 && (
+          <p className="mb-6 text-sm font-medium text-[var(--color-accent)]">
+            {totalCount} {t.totalAgentsRegistered}
+          </p>
+        )}
         <div className="flex justify-center gap-3">
           <Link
             href={`/${locale}/create`}
@@ -92,12 +70,71 @@ export default async function HomePage({ params }: Props) {
         </div>
       </section>
 
-      {/* Example Card */}
-      <section className="mb-20">
-        <div className="text-center">
-          <ExampleCard t={t} />
-        </div>
-      </section>
+      {/* Featured Agents */}
+      {featured.length > 0 && (
+        <section className="mb-20">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-[var(--color-primary)]">
+              {t.featuredAgents}
+            </h2>
+            <Link
+              href={`/${locale}/agents`}
+              className="text-sm text-[var(--color-accent)] hover:underline"
+            >
+              {t.viewAll} &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((agent) => {
+              const avatarColor = generateAvatarColor(agent.slug)
+              return (
+                <Link
+                  key={agent.id}
+                  href={`/${locale}/agent/${agent.slug}`}
+                  className="group block rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 transition-all hover:border-[var(--color-accent)] hover:shadow-md"
+                >
+                  <div className="mb-3 flex items-center gap-3">
+                    {agent.avatar_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={agent.avatar_url} alt={agent.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white"
+                        style={{ backgroundColor: avatarColor }}
+                      >
+                        {agent.name[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold text-[var(--color-primary)] group-hover:text-[var(--color-accent)]">
+                        {agent.name}
+                      </h3>
+                      {agent.provider && (
+                        <p className="truncate text-xs text-[var(--color-text-secondary)]">{t.by} {agent.provider}</p>
+                      )}
+                    </div>
+                  </div>
+                  {agent.description && (
+                    <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                      {agent.description}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {agent.protocols.map((p: string) => (
+                      <ProtocolBadge key={p} protocol={p} />
+                    ))}
+                    {agent.tags.slice(0, 2).map((tag: string) => (
+                      <span key={tag} className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section className="mb-20">

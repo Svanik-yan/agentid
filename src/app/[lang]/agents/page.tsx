@@ -70,15 +70,22 @@ function AgentCard({ agent, lang, t }: { agent: Agent; lang: string; t: ReturnTy
         </p>
       )}
 
-      <div className="flex flex-wrap gap-1.5">
-        {agent.protocols.map((p) => (
-          <ProtocolBadge key={p} protocol={p} />
-        ))}
-        {agent.tags.slice(0, 3).map((tag) => (
-          <span key={tag} className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">
-            {tag}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {agent.protocols.map((p) => (
+            <ProtocolBadge key={p} protocol={p} />
+          ))}
+          {agent.tags.slice(0, 3).map((tag) => (
+            <span key={tag} className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">
+              {tag}
+            </span>
+          ))}
+        </div>
+        {typeof agent.view_count === 'number' && agent.view_count > 0 && (
+          <span className="shrink-0 text-xs text-[var(--color-text-secondary)]">
+            {agent.view_count} {t.views}
           </span>
-        ))}
+        )}
       </div>
     </Link>
   )
@@ -98,12 +105,14 @@ export default function DirectoryPage() {
   const [search, setSearch] = useState('')
   const [protocol, setProtocol] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [sort, setSort] = useState('newest')
 
   const fetchAgents = useCallback(async () => {
     setLoading(true)
     const params = new URLSearchParams()
     if (search) params.set('q', search)
     if (protocol) params.set('protocol', protocol)
+    if (sort !== 'newest') params.set('sort', sort)
     params.set('page', String(page))
     params.set('limit', '24')
 
@@ -118,7 +127,7 @@ export default function DirectoryPage() {
     } finally {
       setLoading(false)
     }
-  }, [search, protocol, page])
+  }, [search, protocol, page, sort])
 
   useEffect(() => {
     fetchAgents()
@@ -190,12 +199,29 @@ export default function DirectoryPage() {
         </div>
       </div>
 
-      {/* Results count */}
-      {!loading && (
-        <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
-          {total} {t.agentsCount}
-        </p>
-      )}
+      {/* Sort */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex gap-1.5">
+          {([['newest', t.sortNewest], ['views', t.sortPopular], ['name', t.sortName]] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => { setSort(key); setPage(1) }}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                sort === key
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {!loading && (
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            {total} {t.agentsCount}
+          </p>
+        )}
+      </div>
 
       {/* Loading */}
       {loading && (

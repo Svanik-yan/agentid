@@ -83,6 +83,11 @@ const en = {
   endpoints: 'Endpoints',
   embedBadgeReadme: 'Embed this badge in your README',
   createOwnCard: 'Create your own Agent Card',
+  share: 'Share',
+  shareOnTwitter: 'Share on X',
+  shareOnLinkedIn: 'Share on LinkedIn',
+  copyBadge: 'Copy Badge',
+  badgeCopied: 'Badge Markdown copied!',
 
   // Edit page
   editTokenRequired: 'Edit Token Required',
@@ -122,6 +127,13 @@ const en = {
   noAgentsFoundDesc: 'Try a different search or filter.',
   beTheFirst: 'Be the first to create an Agent Card',
   agentsCount: 'agents',
+  sortNewest: 'Newest',
+  sortPopular: 'Most Viewed',
+  sortName: 'Name',
+  views: 'views',
+  featuredAgents: 'Featured Agents',
+  totalAgentsRegistered: 'agents registered',
+  viewAll: 'View All',
 }
 
 const zh: typeof en = {
@@ -205,6 +217,11 @@ const zh: typeof en = {
   endpoints: '端点',
   embedBadgeReadme: '在 README 中嵌入此徽章',
   createOwnCard: '创建你自己的 Agent 名片',
+  share: '分享',
+  shareOnTwitter: '分享到 X',
+  shareOnLinkedIn: '分享到 LinkedIn',
+  copyBadge: '复制徽章',
+  badgeCopied: '徽章 Markdown 已复制！',
 
   // Edit page
   editTokenRequired: '需要编辑令牌',
@@ -244,6 +261,13 @@ const zh: typeof en = {
   noAgentsFoundDesc: '尝试不同的搜索或筛选条件。',
   beTheFirst: '成为第一个创建 Agent 名片的人',
   agentsCount: '个 Agent',
+  sortNewest: '最新',
+  sortPopular: '最多浏览',
+  sortName: '名称',
+  views: '次浏览',
+  featuredAgents: '精选 Agent',
+  totalAgentsRegistered: '个 Agent 已注册',
+  viewAll: '查看全部',
 }
 
 const dictionaries = { en, zh } as const

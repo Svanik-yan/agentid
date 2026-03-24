@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export async function POST(_request: Request, { params }: Props) {
   const { slug } = await params
+  const ip = getClientIp(_request)
+  const { success } = rateLimit(`view:${ip}:${slug}`, { limit: 5, windowMs: 60_000 })
+  if (!success) {
+    return NextResponse.json({ ok: true })
+  }
 
   const { error } = await supabaseAdmin.rpc('increment_view_count', { agent_slug: slug })
 

@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase-server'
 import type { Agent } from '@/lib/types'
 import { type Locale, getDictionary } from '@/lib/i18n'
 import { ViewCounter } from '@/components/view-counter'
+import { ShareButtons } from '@/components/share-buttons'
 
 type Props = { params: Promise<{ lang: string; slug: string }> }
 
@@ -241,12 +242,23 @@ export default async function AgentPage({ params }: Props) {
         )}
       </div>
 
-      {/* Badge */}
-      <div className="mt-6 text-center">
-        <p className="mb-2 text-xs text-[var(--color-text-secondary)]">{t.embedBadgeReadme}</p>
-        <code className="rounded bg-[var(--color-surface-alt)] px-3 py-1.5 text-xs font-mono text-[var(--color-text-secondary)]">
-          {'[![AgentID](https://www.agentid.top/badge/' + agent.slug + '.svg)](https://www.agentid.top/agent/' + agent.slug + ')'}
-        </code>
+      {/* Share + Badge */}
+      <div className="mt-6 space-y-4">
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t.share}</p>
+          <ShareButtons
+            slug={agent.slug}
+            name={agent.name}
+            description={agent.description}
+            t={{ shareOnTwitter: t.shareOnTwitter, shareOnLinkedIn: t.shareOnLinkedIn, copyBadge: t.copyBadge, badgeCopied: t.badgeCopied }}
+          />
+        </div>
+        <div className="text-center">
+          <p className="mb-2 text-xs text-[var(--color-text-secondary)]">{t.embedBadgeReadme}</p>
+          <code className="rounded bg-[var(--color-surface-alt)] px-3 py-1.5 text-xs font-mono text-[var(--color-text-secondary)]">
+            {'[![AgentID](https://www.agentid.top/badge/' + agent.slug + '.svg)](https://www.agentid.top/agent/' + agent.slug + ')'}
+          </code>
+        </div>
       </div>
 
       {/* Claim CTA */}

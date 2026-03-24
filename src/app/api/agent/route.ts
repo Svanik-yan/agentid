@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { generateEditToken, hashToken, validateSlug, slugify } from '@/lib/utils'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import type { AgentCreateInput } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const { success } = rateLimit(`create:${ip}`, { limit: 10, windowMs: 3600_000 })
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+    }
+
     const body: AgentCreateInput = await request.json()
 
     if (!body.name || !body.slug || !body.protocols?.length) {
