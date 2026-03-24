@@ -1,0 +1,24 @@
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import { Header } from '@/components/header'
+
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
+const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'AgentID — A Business Card for Your AI Agent',
+  description: 'Create a shareable profile for your AI Agent. Embed a badge in your README. Get discovered.',
+  metadataBase: new URL('https://agentid.top'),
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        <Header />
+        <main>{children}</main>
+      </body>
+    </html>
+  )
+}
