@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import type { Agent } from '@/lib/types'
 import { type Locale, getDictionary } from '@/lib/i18n'
+import { ViewCounter } from '@/components/view-counter'
 
 type Props = { params: Promise<{ lang: string; slug: string }> }
 
@@ -68,7 +69,7 @@ export default async function AgentPage({ params }: Props) {
 
   const { data: agent } = await supabaseAdmin
     .from('agents')
-    .select('id, slug, name, provider, description, avatar_url, protocols, mcp_endpoint, a2a_endpoint, api_endpoint, capabilities, tags, pricing, website, github, created_at')
+    .select('id, slug, name, provider, description, avatar_url, protocols, mcp_endpoint, a2a_endpoint, api_endpoint, capabilities, tags, pricing, website, github, view_count, created_at')
     .eq('slug', slug)
     .single() as { data: Agent | null }
 
@@ -97,6 +98,7 @@ export default async function AgentPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <ViewCounter slug={agent.slug} />
       {/* Card */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-8 shadow-sm">
         {/* Header */}
@@ -122,11 +124,18 @@ export default async function AgentPage({ params }: Props) {
               <p className="text-sm text-[var(--color-text-secondary)]">{t.by} {agent.provider}</p>
             )}
           </div>
-          {agent.pricing && (
-            <span className="ml-auto rounded-full bg-[var(--color-surface-alt)] px-3 py-1 text-xs font-medium capitalize text-[var(--color-text-secondary)]">
-              {agent.pricing}
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {typeof agent.view_count === 'number' && agent.view_count > 0 && (
+              <span className="text-xs text-[var(--color-text-secondary)]">
+                {agent.view_count} views
+              </span>
+            )}
+            {agent.pricing && (
+              <span className="rounded-full bg-[var(--color-surface-alt)] px-3 py-1 text-xs font-medium capitalize text-[var(--color-text-secondary)]">
+                {agent.pricing}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Description */}

@@ -15,6 +15,7 @@ export interface Agent {
   website: string | null
   github: string | null
   raw_a2a_json: Record<string, unknown> | null
+  view_count: number
   created_at: string
   updated_at: string
 }
