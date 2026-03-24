@@ -102,6 +102,17 @@ const en = {
   notFoundTitle: '404',
   notFoundDesc: "This agent doesn't have a card yet.",
   claimIt: 'Claim It — Create a Card',
+
+  // Directory page
+  directory: 'Directory',
+  directoryTitle: 'Agent Directory',
+  directoryDesc: 'Discover AI Agents with public profiles on AgentID.',
+  searchPlaceholder: 'Search agents...',
+  allProtocols: 'All Protocols',
+  noAgentsFound: 'No agents found',
+  noAgentsFoundDesc: 'Try a different search or filter.',
+  beTheFirst: 'Be the first to create an Agent Card',
+  agentsCount: 'agents',
 }
 
 const zh: typeof en = {
@@ -204,6 +215,17 @@ const zh: typeof en = {
   notFoundTitle: '404',
   notFoundDesc: '此 Agent 还没有名片。',
   claimIt: '去创建一张',
+
+  // Directory page
+  directory: '目录',
+  directoryTitle: 'Agent 目录',
+  directoryDesc: '发现在 AgentID 上拥有公开资料的 AI Agent。',
+  searchPlaceholder: '搜索 Agent...',
+  allProtocols: '所有协议',
+  noAgentsFound: '未找到 Agent',
+  noAgentsFoundDesc: '尝试不同的搜索或筛选条件。',
+  beTheFirst: '成为第一个创建 Agent 名片的人',
+  agentsCount: '个 Agent',
 }
 
 const dictionaries = { en, zh } as const

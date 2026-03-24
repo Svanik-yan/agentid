@@ -83,6 +83,12 @@ export default async function HomePage({ params }: Props) {
           >
             {t.heroButton}
           </Link>
+          <Link
+            href={`/${locale}/agents`}
+            className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface-alt)]"
+          >
+            {t.directory}
+          </Link>
         </div>
       </section>
 

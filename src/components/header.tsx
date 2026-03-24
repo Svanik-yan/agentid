@@ -25,6 +25,12 @@ export function Header({ lang }: { lang: Locale }) {
           {t.brandName}
         </Link>
         <div className="flex items-center gap-3">
+          <Link
+            href={`/${lang}/agents`}
+            className="text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-primary)]"
+          >
+            {t.directory}
+          </Link>
           {/* Language Switcher */}
           <div className="flex items-center gap-1 rounded-full border border-[var(--color-border)] px-1 py-0.5 text-xs">
             {locales.map((l) => (
