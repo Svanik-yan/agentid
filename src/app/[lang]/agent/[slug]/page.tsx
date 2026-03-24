@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://www.agentid.top/agent/${slug}`,
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title,
       description,
     },
@@ -78,8 +78,25 @@ export default async function AgentPage({ params }: Props) {
 
   const avatarColor = generateAvatarColor(agent.slug)
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: agent.name,
+    description: agent.description || undefined,
+    url: `https://www.agentid.top/${locale}/agent/${agent.slug}`,
+    applicationCategory: 'AI Agent',
+    ...(agent.provider && { author: { '@type': 'Organization', name: agent.provider } }),
+    ...(agent.pricing && { offers: { '@type': 'Offer', price: agent.pricing === 'free' ? '0' : undefined, priceCurrency: 'USD', description: agent.pricing } }),
+    ...(agent.website && { sameAs: agent.website }),
+    keywords: [...agent.protocols, ...agent.tags, ...agent.capabilities].join(', '),
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Card */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-8 shadow-sm">
         {/* Header */}
