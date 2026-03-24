@@ -8,10 +8,10 @@ export default function NotFound() {
         This agent doesn&apos;t have a card yet.
       </p>
       <Link
-        href="/create"
+        href="/en/create"
         className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
       >
-        Claim It — Create a Card
+        Create a Card
       </Link>
     </div>
   )

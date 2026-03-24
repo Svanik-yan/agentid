@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { type Locale, getDictionary } from '@/lib/i18n'
 
 const EXAMPLE_AGENT = {
   name: 'WeatherBot',
@@ -24,7 +25,7 @@ function ProtocolBadge({ protocol }: { protocol: string }) {
   )
 }
 
-function ExampleCard() {
+function ExampleCard({ t }: { t: ReturnType<typeof getDictionary> }) {
   return (
     <div className="mx-auto w-full max-w-sm rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-3">
@@ -36,7 +37,7 @@ function ExampleCard() {
         </div>
         <div>
           <h3 className="text-base font-semibold text-[var(--color-primary)]">{EXAMPLE_AGENT.name}</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">by {EXAMPLE_AGENT.provider}</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">{t.by} {EXAMPLE_AGENT.provider}</p>
         </div>
       </div>
       <p className="mb-4 text-sm leading-relaxed text-[var(--color-text-secondary)]">
@@ -58,23 +59,29 @@ function ExampleCard() {
   )
 }
 
-export default function HomePage() {
+type Props = { params: Promise<{ lang: string }> }
+
+export default async function HomePage({ params }: Props) {
+  const { lang } = await params
+  const locale = (lang === 'zh' ? 'zh' : 'en') as Locale
+  const t = getDictionary(locale)
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
       {/* Hero */}
       <section className="mb-20 text-center">
         <h1 className="mb-4 text-4xl font-bold tracking-tight text-[var(--color-primary)] sm:text-5xl">
-          A Business Card for Your AI Agent
+          {t.heroTitle}
         </h1>
         <p className="mx-auto mb-8 max-w-xl text-lg text-[var(--color-text-secondary)]">
-          Create a shareable profile. Embed a badge in your README. Get discovered by other agents and developers.
+          {t.heroDescription}
         </p>
         <div className="flex justify-center gap-3">
           <Link
-            href="/create"
+            href={`/${locale}/create`}
             className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
           >
-            Create Your Card — Free
+            {t.heroButton}
           </Link>
         </div>
       </section>
@@ -82,20 +89,20 @@ export default function HomePage() {
       {/* Example Card */}
       <section className="mb-20">
         <div className="text-center">
-          <ExampleCard />
+          <ExampleCard t={t} />
         </div>
       </section>
 
       {/* How it works */}
       <section className="mb-20">
         <h2 className="mb-8 text-center text-2xl font-semibold text-[var(--color-primary)]">
-          How It Works
+          {t.howItWorks}
         </h2>
         <div className="grid gap-8 sm:grid-cols-3">
           {[
-            { step: '1', title: 'Create', desc: 'Fill in your agent\'s details or import from an A2A agent card JSON.' },
-            { step: '2', title: 'Share', desc: 'Get a public URL and an embeddable badge for your README.' },
-            { step: '3', title: 'Get Discovered', desc: 'Other agents and developers find your agent through its card.' },
+            { step: '1', title: t.step1Title, desc: t.step1Desc },
+            { step: '2', title: t.step2Title, desc: t.step2Desc },
+            { step: '3', title: t.step3Title, desc: t.step3Desc },
           ].map((item) => (
             <div key={item.step} className="text-center">
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-accent)] text-sm font-bold text-white">
@@ -111,10 +118,10 @@ export default function HomePage() {
       {/* Footer CTA */}
       <section className="text-center">
         <Link
-          href="/create"
+          href={`/${locale}/create`}
           className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
         >
-          Create Your Card
+          {t.createYourCard}
         </Link>
       </section>
     </div>

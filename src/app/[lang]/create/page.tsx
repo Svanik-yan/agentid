@@ -1,17 +1,11 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { Agent } from '@/lib/types'
+import { type Locale, getDictionary } from '@/lib/i18n'
 
 const PROTOCOLS = ['A2A', 'MCP', 'API']
-const PRICING_OPTIONS = [
-  { value: '', label: 'Select pricing...' },
-  { value: 'free', label: 'Free' },
-  { value: 'freemium', label: 'Freemium' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'enterprise', label: 'Enterprise' },
-]
 
 function slugify(name: string): string {
   return name
@@ -36,6 +30,10 @@ type Tab = 'manual' | 'import'
 
 export default function CreatePage() {
   const router = useRouter()
+  const params = useParams()
+  const lang = (params.lang as Locale) || 'en'
+  const t = getDictionary(lang)
+
   const [tab, setTab] = useState<Tab>('manual')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -57,6 +55,14 @@ export default function CreatePage() {
   const [github, setGithub] = useState('')
   const [jsonInput, setJsonInput] = useState('')
 
+  const PRICING_OPTIONS = [
+    { value: '', label: t.selectPricing },
+    { value: 'free', label: t.free },
+    { value: 'freemium', label: t.freemium },
+    { value: 'paid', label: t.paid },
+    { value: 'enterprise', label: t.enterprise },
+  ]
+
   // Auto-generate slug from name
   useEffect(() => {
     if (!slugManuallyEdited && name) {
@@ -73,7 +79,6 @@ export default function CreatePage() {
   const handleJsonImport = useCallback(() => {
     try {
       const parsed = JSON.parse(jsonInput)
-      // Support A2A Agent Card format
       const card = parsed.card || parsed
       if (card.name) setName(card.name)
       if (card.description) setDescription(card.description)
@@ -88,24 +93,24 @@ export default function CreatePage() {
       setTab('manual')
       setError('')
     } catch {
-      setError('Invalid JSON. Please paste a valid A2A Agent Card JSON.')
+      setError(t.invalidJson)
     }
-  }, [jsonInput])
+  }, [jsonInput, t.invalidJson])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (!name.trim()) {
-      setError('Agent name is required')
+      setError(t.nameRequired)
       return
     }
     if (!slug.trim()) {
-      setError('Slug is required')
+      setError(t.slugRequired)
       return
     }
     if (protocols.length === 0) {
-      setError('Select at least one protocol')
+      setError(t.selectProtocol)
       return
     }
 
@@ -135,14 +140,13 @@ export default function CreatePage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Failed to create agent')
+        setError(data.error || t.networkError)
         return
       }
 
-      // Navigate to success page with token in fragment
-      router.push(`/success/${data.agent.slug}#token=${data.edit_token}`)
+      router.push(`/${lang}/success/${data.agent.slug}#token=${data.edit_token}`)
     } catch {
-      setError('Network error. Please try again.')
+      setError(t.networkError)
     } finally {
       setSubmitting(false)
     }
@@ -150,7 +154,7 @@ export default function CreatePage() {
 
   // Live preview data
   const previewAgent: Partial<Agent> = {
-    name: name || 'Your Agent',
+    name: name || t.yourAgent,
     slug: slug || 'your-agent',
     provider: provider || null,
     description: description || null,
@@ -162,7 +166,7 @@ export default function CreatePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-[var(--color-primary)]">Create Your Agent Card</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[var(--color-primary)]">{t.createPageTitle}</h1>
 
       {/* Tab Switch */}
       <div className="mb-6 flex gap-1 rounded-[var(--radius-md)] bg-[var(--color-surface-alt)] p-1 w-fit">
@@ -172,7 +176,7 @@ export default function CreatePage() {
             tab === 'manual' ? 'bg-white text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)]'
           }`}
         >
-          Manual
+          {t.tabManual}
         </button>
         <button
           onClick={() => setTab('import')}
@@ -180,14 +184,14 @@ export default function CreatePage() {
             tab === 'import' ? 'bg-white text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)]'
           }`}
         >
-          Import JSON
+          {t.tabImport}
         </button>
       </div>
 
       {tab === 'import' ? (
         <div className="mb-8">
           <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">
-            Paste A2A Agent Card JSON
+            {t.importLabel}
           </label>
           <textarea
             value={jsonInput}
@@ -201,7 +205,7 @@ export default function CreatePage() {
             onClick={handleJsonImport}
             className="mt-3 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
           >
-            Import & Fill Form
+            {t.importButton}
           </button>
         </div>
       ) : (
@@ -211,7 +215,7 @@ export default function CreatePage() {
             {/* Name */}
             <div>
               <label htmlFor="name" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">
-                Agent Name <span className="text-[var(--color-error)]">*</span>
+                {t.agentName} <span className="text-[var(--color-error)]">*</span>
               </label>
               <input
                 id="name"
@@ -226,7 +230,7 @@ export default function CreatePage() {
             {/* Slug */}
             <div>
               <label htmlFor="slug" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">
-                Slug <span className="text-[var(--color-error)]">*</span>
+                {t.slug} <span className="text-[var(--color-error)]">*</span>
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[var(--color-text-secondary)]">agentid.top/agent/</span>
@@ -246,7 +250,7 @@ export default function CreatePage() {
 
             {/* Provider */}
             <div>
-              <label htmlFor="provider" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Provider</label>
+              <label htmlFor="provider" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.provider}</label>
               <input
                 id="provider"
                 value={provider}
@@ -259,12 +263,12 @@ export default function CreatePage() {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Description</label>
+              <label htmlFor="description" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.description}</label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What does your agent do?"
+                placeholder={t.descriptionPlaceholder}
                 rows={3}
                 maxLength={500}
                 className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
@@ -275,7 +279,7 @@ export default function CreatePage() {
             {/* Protocols */}
             <div>
               <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">
-                Protocols <span className="text-[var(--color-error)]">*</span>
+                {t.protocols} <span className="text-[var(--color-error)]">*</span>
               </label>
               <div className="flex gap-2">
                 {PROTOCOLS.map((p) => (
@@ -298,7 +302,7 @@ export default function CreatePage() {
             {/* Endpoints */}
             {protocols.includes('A2A') && (
               <div>
-                <label htmlFor="a2a" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">A2A Endpoint</label>
+                <label htmlFor="a2a" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.a2aEndpoint}</label>
                 <input
                   id="a2a"
                   value={a2aEndpoint}
@@ -310,7 +314,7 @@ export default function CreatePage() {
             )}
             {protocols.includes('MCP') && (
               <div>
-                <label htmlFor="mcp" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">MCP Endpoint</label>
+                <label htmlFor="mcp" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.mcpEndpoint}</label>
                 <input
                   id="mcp"
                   value={mcpEndpoint}
@@ -322,7 +326,7 @@ export default function CreatePage() {
             )}
             {protocols.includes('API') && (
               <div>
-                <label htmlFor="api" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">API Endpoint</label>
+                <label htmlFor="api" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.apiEndpoint}</label>
                 <input
                   id="api"
                   value={apiEndpoint}
@@ -335,7 +339,7 @@ export default function CreatePage() {
 
             {/* Capabilities */}
             <div>
-              <label htmlFor="capabilities" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Capabilities</label>
+              <label htmlFor="capabilities" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.capabilities}</label>
               <input
                 id="capabilities"
                 value={capabilities}
@@ -343,12 +347,12 @@ export default function CreatePage() {
                 placeholder="weather-lookup, forecast, alerts"
                 className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
               />
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Comma-separated</p>
+              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{t.commaSeparated}</p>
             </div>
 
             {/* Tags */}
             <div>
-              <label htmlFor="tags" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Tags</label>
+              <label htmlFor="tags" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.tags}</label>
               <input
                 id="tags"
                 value={tags}
@@ -356,12 +360,12 @@ export default function CreatePage() {
                 placeholder="weather, data, utility"
                 className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
               />
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Comma-separated</p>
+              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{t.commaSeparated}</p>
             </div>
 
             {/* Pricing */}
             <div>
-              <label htmlFor="pricing" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Pricing</label>
+              <label htmlFor="pricing" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.pricing}</label>
               <select
                 id="pricing"
                 value={pricing}
@@ -377,7 +381,7 @@ export default function CreatePage() {
             {/* Website & GitHub */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="website" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Website</label>
+                <label htmlFor="website" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.website}</label>
                 <input
                   id="website"
                   value={website}
@@ -387,7 +391,7 @@ export default function CreatePage() {
                 />
               </div>
               <div>
-                <label htmlFor="github" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">GitHub</label>
+                <label htmlFor="github" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.github}</label>
                 <input
                   id="github"
                   value={github}
@@ -407,7 +411,7 @@ export default function CreatePage() {
                 disabled={submitting}
                 className="w-full rounded-[var(--radius-md)] bg-[var(--color-accent)] py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
               >
-                {submitting ? 'Publishing...' : 'Publish Card'}
+                {submitting ? t.publishing : t.publishCard}
               </button>
             </div>
           </form>
@@ -416,7 +420,7 @@ export default function CreatePage() {
           <div className="hidden lg:block">
             <div className="sticky top-20">
               <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
-                Live Preview
+                {t.livePreview}
               </p>
               <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-5 shadow-sm">
                 <div className="mb-4 flex items-center gap-3">
@@ -429,7 +433,7 @@ export default function CreatePage() {
                   <div>
                     <h3 className="text-base font-semibold text-[var(--color-primary)]">{previewAgent.name}</h3>
                     {previewAgent.provider && (
-                      <p className="text-sm text-[var(--color-text-secondary)]">by {previewAgent.provider}</p>
+                      <p className="text-sm text-[var(--color-text-secondary)]">{t.by} {previewAgent.provider}</p>
                     )}
                   </div>
                 </div>

@@ -3,21 +3,25 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import type { Agent } from '@/lib/types'
+import { type Locale, getDictionary } from '@/lib/i18n'
 
-type Props = { params: Promise<{ slug: string }> }
+type Props = { params: Promise<{ lang: string; slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
+  const { slug, lang } = await params
+  const locale = (lang === 'zh' ? 'zh' : 'en') as Locale
+  const t = getDictionary(locale)
+
   const { data: agent } = await supabaseAdmin
     .from('agents')
     .select('name, description, provider, protocols')
     .eq('slug', slug)
     .single()
 
-  if (!agent) return { title: 'Agent Not Found — AgentID' }
+  if (!agent) return { title: `${t.agentNotFound} — AgentID` }
 
   const title = `${agent.name} — AgentID`
-  const description = agent.description || `${agent.name} agent card on AgentID`
+  const description = agent.description || `${agent.name} ${t.agentCardOn}`
 
   return {
     title,
@@ -26,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: 'profile',
-      url: `https://agentid.top/agent/${slug}`,
+      url: `https://www.agentid.top/agent/${slug}`,
     },
     twitter: {
       card: 'summary',
@@ -58,7 +62,9 @@ function generateAvatarColor(slug: string): string {
 }
 
 export default async function AgentPage({ params }: Props) {
-  const { slug } = await params
+  const { slug, lang } = await params
+  const locale = (lang === 'zh' ? 'zh' : 'en') as Locale
+  const t = getDictionary(locale)
 
   const { data: agent } = await supabaseAdmin
     .from('agents')
@@ -96,7 +102,7 @@ export default async function AgentPage({ params }: Props) {
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-primary)]">{agent.name}</h1>
             {agent.provider && (
-              <p className="text-sm text-[var(--color-text-secondary)]">by {agent.provider}</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">{t.by} {agent.provider}</p>
             )}
           </div>
           {agent.pricing && (
@@ -113,7 +119,7 @@ export default async function AgentPage({ params }: Props) {
 
         {/* Protocols */}
         <div className="mb-6">
-          <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">Protocols</h2>
+          <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">{t.protocols}</h2>
           <div className="flex flex-wrap gap-2">
             {agent.protocols.map((p) => (
               <ProtocolBadge key={p} protocol={p} />
@@ -124,7 +130,7 @@ export default async function AgentPage({ params }: Props) {
         {/* Endpoints */}
         {(agent.a2a_endpoint || agent.mcp_endpoint || agent.api_endpoint) && (
           <div className="mb-6">
-            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">Endpoints</h2>
+            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">{t.endpoints}</h2>
             <div className="space-y-2">
               {agent.a2a_endpoint && (
                 <div className="flex items-center gap-2">
@@ -157,7 +163,7 @@ export default async function AgentPage({ params }: Props) {
         {/* Capabilities */}
         {agent.capabilities.length > 0 && (
           <div className="mb-6">
-            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">Capabilities</h2>
+            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">{t.capabilities}</h2>
             <div className="flex flex-wrap gap-2">
               {agent.capabilities.map((c) => (
                 <span key={c} className="rounded-[var(--radius-sm)] bg-[var(--color-surface-alt)] px-2.5 py-1 text-sm text-[var(--color-text)]">
@@ -171,11 +177,11 @@ export default async function AgentPage({ params }: Props) {
         {/* Tags */}
         {agent.tags.length > 0 && (
           <div className="mb-6">
-            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">Tags</h2>
+            <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">{t.tags}</h2>
             <div className="flex flex-wrap gap-2">
-              {agent.tags.map((t) => (
-                <span key={t} className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-xs text-[var(--color-text-secondary)]">
-                  {t}
+              {agent.tags.map((tag) => (
+                <span key={tag} className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-xs text-[var(--color-text-secondary)]">
+                  {tag}
                 </span>
               ))}
             </div>
@@ -192,7 +198,7 @@ export default async function AgentPage({ params }: Props) {
                 rel="noopener noreferrer"
                 className="text-sm text-[var(--color-accent)] hover:underline"
               >
-                Website
+                {t.website}
               </a>
             )}
             {agent.github && (
@@ -211,19 +217,19 @@ export default async function AgentPage({ params }: Props) {
 
       {/* Badge */}
       <div className="mt-6 text-center">
-        <p className="mb-2 text-xs text-[var(--color-text-secondary)]">Embed this badge in your README</p>
+        <p className="mb-2 text-xs text-[var(--color-text-secondary)]">{t.embedBadgeReadme}</p>
         <code className="rounded bg-[var(--color-surface-alt)] px-3 py-1.5 text-xs font-mono text-[var(--color-text-secondary)]">
-          {'[![AgentID](https://agentid.top/badge/' + agent.slug + '.svg)](https://agentid.top/agent/' + agent.slug + ')'}
+          {'[![AgentID](https://www.agentid.top/badge/' + agent.slug + '.svg)](https://www.agentid.top/agent/' + agent.slug + ')'}
         </code>
       </div>
 
-      {/* Claim CTA for unclaimed */}
+      {/* Claim CTA */}
       <div className="mt-4 text-center">
         <Link
-          href="/create"
+          href={`/${locale}/create`}
           className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-accent)]"
         >
-          Create your own Agent Card
+          {t.createOwnCard}
         </Link>
       </div>
     </div>

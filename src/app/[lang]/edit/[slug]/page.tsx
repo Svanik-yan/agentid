@@ -3,20 +3,24 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import type { Agent } from '@/lib/types'
+import { type Locale, getDictionary } from '@/lib/i18n'
 
 const PROTOCOLS = ['A2A', 'MCP', 'API']
-const PRICING_OPTIONS = [
-  { value: '', label: 'No pricing' },
-  { value: 'free', label: 'Free' },
-  { value: 'freemium', label: 'Freemium' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'enterprise', label: 'Enterprise' },
-]
 
 export default function EditPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
+  const lang = (params.lang as Locale) || 'en'
+  const t = getDictionary(lang)
+
+  const PRICING_OPTIONS = [
+    { value: '', label: t.noPricing },
+    { value: 'free', label: t.free },
+    { value: 'freemium', label: t.freemium },
+    { value: 'paid', label: t.paid },
+    { value: 'enterprise', label: t.enterprise },
+  ]
 
   const [token, setToken] = useState('')
   const [agent, setAgent] = useState<Agent | null>(null)
@@ -52,7 +56,7 @@ export default function EditPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          setError('Agent not found')
+          setError(t.agentNotFoundEdit)
         } else {
           setAgent(data)
           setName(data.name || '')
@@ -69,9 +73,9 @@ export default function EditPage() {
           setGithub(data.github || '')
         }
       })
-      .catch(() => setError('Failed to load agent'))
+      .catch(() => setError(t.failedToLoad))
       .finally(() => setLoading(false))
-  }, [slug])
+  }, [slug, t.agentNotFoundEdit, t.failedToLoad])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,7 +83,7 @@ export default function EditPage() {
     setSuccess(false)
 
     if (!token) {
-      setError('Edit token is required. Use the edit link you received when creating the card.')
+      setError(t.editTokenRequiredError)
       return
     }
 
@@ -109,14 +113,14 @@ export default function EditPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Failed to update')
+        setError(data.error || t.failedToUpdate)
         return
       }
 
       setSuccess(true)
       setAgent(data)
     } catch {
-      setError('Network error. Please try again.')
+      setError(t.networkError)
     } finally {
       setSaving(false)
     }
@@ -125,7 +129,7 @@ export default function EditPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-[var(--color-text-secondary)]">Loading...</p>
+        <p className="text-[var(--color-text-secondary)]">{t.loading}</p>
       </div>
     )
   }
@@ -133,8 +137,8 @@ export default function EditPage() {
   if (!agent) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <h1 className="mb-4 text-2xl font-bold text-[var(--color-primary)]">Agent Not Found</h1>
-        <p className="text-[var(--color-text-secondary)]">This agent doesn&apos;t exist yet.</p>
+        <h1 className="mb-4 text-2xl font-bold text-[var(--color-primary)]">{t.agentNotFoundEdit}</h1>
+        <p className="text-[var(--color-text-secondary)]">{t.doesntExist}</p>
       </div>
     )
   }
@@ -142,12 +146,12 @@ export default function EditPage() {
   if (!token) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
-        <h1 className="mb-4 text-2xl font-bold text-[var(--color-primary)]">Edit Token Required</h1>
+        <h1 className="mb-4 text-2xl font-bold text-[var(--color-primary)]">{t.editTokenRequired}</h1>
         <p className="mb-4 text-[var(--color-text-secondary)]">
-          To edit this card, use the edit link you received when you created it. The link contains your edit token in the URL fragment.
+          {t.editTokenRequiredDesc}
         </p>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Format: <code className="font-mono text-xs">/edit/{slug}#token=YOUR_TOKEN</code>
+          {t.editFormat} <code className="font-mono text-xs">/edit/{slug}#token=YOUR_TOKEN</code>
         </p>
       </div>
     )
@@ -158,41 +162,41 @@ export default function EditPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-[var(--color-primary)]">Edit: {agent.name}</h1>
         <button
-          onClick={() => router.push(`/agent/${slug}`)}
+          onClick={() => router.push(`/${lang}/agent/${slug}`)}
           className="text-sm text-[var(--color-accent)] hover:underline"
         >
-          View Card
+          {t.viewCard}
         </button>
       </div>
 
       {success && (
         <div className="mb-4 rounded-[var(--radius-md)] bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
-          Card updated successfully!
+          {t.cardUpdated}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Name</label>
+          <label htmlFor="name" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.name}</label>
           <input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
         </div>
 
         <div>
-          <label htmlFor="provider" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Provider</label>
+          <label htmlFor="provider" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.provider}</label>
           <input id="provider" value={provider} onChange={(e) => setProvider(e.target.value)} maxLength={100}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
         </div>
 
         <div>
-          <label htmlFor="description" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Description</label>
+          <label htmlFor="description" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.description}</label>
           <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={500}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{description.length}/500</p>
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">Protocols</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">{t.protocols}</label>
           <div className="flex gap-2">
             {PROTOCOLS.map((p) => (
               <button key={p} type="button"
@@ -210,42 +214,42 @@ export default function EditPage() {
 
         {protocols.includes('A2A') && (
           <div>
-            <label htmlFor="a2a" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">A2A Endpoint</label>
+            <label htmlFor="a2a" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.a2aEndpoint}</label>
             <input id="a2a" value={a2aEndpoint} onChange={(e) => setA2aEndpoint(e.target.value)}
               className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 font-mono text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           </div>
         )}
         {protocols.includes('MCP') && (
           <div>
-            <label htmlFor="mcp" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">MCP Endpoint</label>
+            <label htmlFor="mcp" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.mcpEndpoint}</label>
             <input id="mcp" value={mcpEndpoint} onChange={(e) => setMcpEndpoint(e.target.value)}
               className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 font-mono text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           </div>
         )}
         {protocols.includes('API') && (
           <div>
-            <label htmlFor="api" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">API Endpoint</label>
+            <label htmlFor="api" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.apiEndpoint}</label>
             <input id="api" value={apiEndpoint} onChange={(e) => setApiEndpoint(e.target.value)}
               className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 font-mono text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           </div>
         )}
 
         <div>
-          <label htmlFor="capabilities" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Capabilities</label>
+          <label htmlFor="capabilities" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.capabilities}</label>
           <input id="capabilities" value={capabilities} onChange={(e) => setCapabilities(e.target.value)}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
-          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Comma-separated</p>
+          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{t.commaSeparated}</p>
         </div>
 
         <div>
-          <label htmlFor="tags" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Tags</label>
+          <label htmlFor="tags" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.tags}</label>
           <input id="tags" value={tags} onChange={(e) => setTags(e.target.value)}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
-          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Comma-separated</p>
+          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{t.commaSeparated}</p>
         </div>
 
         <div>
-          <label htmlFor="pricing" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Pricing</label>
+          <label htmlFor="pricing" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.pricing}</label>
           <select id="pricing" value={pricing} onChange={(e) => setPricing(e.target.value)}
             className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
             {PRICING_OPTIONS.map((o) => (
@@ -256,12 +260,12 @@ export default function EditPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="website" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">Website</label>
+            <label htmlFor="website" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.website}</label>
             <input id="website" value={website} onChange={(e) => setWebsite(e.target.value)}
               className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           </div>
           <div>
-            <label htmlFor="github" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">GitHub</label>
+            <label htmlFor="github" className="mb-1 block text-sm font-medium text-[var(--color-primary)]">{t.github}</label>
             <input id="github" value={github} onChange={(e) => setGithub(e.target.value)}
               className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
           </div>
@@ -271,7 +275,7 @@ export default function EditPage() {
 
         <button type="submit" disabled={saving}
           className="w-full rounded-[var(--radius-md)] bg-[var(--color-accent)] py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50">
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? t.saving : t.saveChanges}
         </button>
       </form>
     </div>

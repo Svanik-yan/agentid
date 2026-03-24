@@ -1,0 +1,213 @@
+export const locales = ['en', 'zh'] as const
+export type Locale = (typeof locales)[number]
+export const defaultLocale: Locale = 'en'
+
+const en = {
+  // Layout & Header
+  siteTitle: 'AgentID — A Business Card for Your AI Agent',
+  siteDescription: 'Create a shareable profile for your AI Agent. Embed a badge in your README. Get discovered.',
+  brandName: 'AgentID',
+  createYourCard: 'Create Your Card',
+
+  // Landing page
+  heroTitle: 'A Business Card for Your AI Agent',
+  heroDescription: 'Create a shareable profile. Embed a badge in your README. Get discovered by other agents and developers.',
+  heroButton: 'Create Your Card — Free',
+  howItWorks: 'How It Works',
+  step1Title: 'Create',
+  step1Desc: "Fill in your agent's details or import from an A2A agent card JSON.",
+  step2Title: 'Share',
+  step2Desc: 'Get a public URL and an embeddable badge for your README.',
+  step3Title: 'Get Discovered',
+  step3Desc: 'Other agents and developers find your agent through its card.',
+
+  // Create page
+  createPageTitle: 'Create Your Agent Card',
+  tabManual: 'Manual',
+  tabImport: 'Import JSON',
+  importLabel: 'Paste A2A Agent Card JSON',
+  importButton: 'Import & Fill Form',
+  invalidJson: 'Invalid JSON. Please paste a valid A2A Agent Card JSON.',
+  agentName: 'Agent Name',
+  slug: 'Slug',
+  provider: 'Provider',
+  description: 'Description',
+  descriptionPlaceholder: 'What does your agent do?',
+  protocols: 'Protocols',
+  a2aEndpoint: 'A2A Endpoint',
+  mcpEndpoint: 'MCP Endpoint',
+  apiEndpoint: 'API Endpoint',
+  capabilities: 'Capabilities',
+  tags: 'Tags',
+  commaSeparated: 'Comma-separated',
+  pricing: 'Pricing',
+  selectPricing: 'Select pricing...',
+  free: 'Free',
+  freemium: 'Freemium',
+  paid: 'Paid',
+  enterprise: 'Enterprise',
+  noPricing: 'No pricing',
+  website: 'Website',
+  github: 'GitHub',
+  publishing: 'Publishing...',
+  publishCard: 'Publish Card',
+  livePreview: 'Live Preview',
+  yourAgent: 'Your Agent',
+  nameRequired: 'Agent name is required',
+  slugRequired: 'Slug is required',
+  selectProtocol: 'Select at least one protocol',
+  networkError: 'Network error. Please try again.',
+  by: 'by',
+
+  // Success page
+  cardIsLive: 'Your Agent Card is Live!',
+  saveEditToken: 'Save Your Edit Token',
+  saveEditTokenDesc: 'This is the only way to edit your card later. Save it somewhere safe — it cannot be recovered.',
+  loading: '(loading...)',
+  copyToken: 'Copy Token',
+  copied: 'Copied!',
+  copyEditLink: 'Copy Edit Link',
+  savedNext: "I've Saved It — Next",
+  embedBadge: 'Embed a Badge',
+  embedBadgeDesc: "Add this to your README to show your agent's identity.",
+  copyMarkdown: 'Copy Markdown',
+  next: 'Next',
+  allSet: "You're All Set!",
+  allSetDesc: 'Your agent card is live and discoverable. Share it with the world.',
+  viewCard: 'View Card',
+  createAnother: 'Create Another',
+
+  // Agent page
+  agentNotFound: 'Agent Not Found',
+  agentCardOn: 'agent card on AgentID',
+  endpoints: 'Endpoints',
+  embedBadgeReadme: 'Embed this badge in your README',
+  createOwnCard: 'Create your own Agent Card',
+
+  // Edit page
+  editTokenRequired: 'Edit Token Required',
+  editTokenRequiredDesc: 'To edit this card, use the edit link you received when you created it. The link contains your edit token in the URL fragment.',
+  editFormat: 'Format:',
+  name: 'Name',
+  saving: 'Saving...',
+  saveChanges: 'Save Changes',
+  cardUpdated: 'Card updated successfully!',
+  agentNotFoundEdit: 'Agent not found',
+  doesntExist: "This agent doesn't exist yet.",
+  failedToLoad: 'Failed to load agent',
+  failedToUpdate: 'Failed to update',
+  editTokenRequiredError: 'Edit token is required. Use the edit link you received when creating the card.',
+
+  // 404
+  notFoundTitle: '404',
+  notFoundDesc: "This agent doesn't have a card yet.",
+  claimIt: 'Claim It — Create a Card',
+}
+
+const zh: typeof en = {
+  // Layout & Header
+  siteTitle: 'AgentID — AI Agent 名片',
+  siteDescription: '为你的 AI Agent 创建一个可分享的资料页。在 README 中嵌入徽章。被更多开发者发现。',
+  brandName: 'AgentID',
+  createYourCard: '创建名片',
+
+  // Landing page
+  heroTitle: 'AI Agent 的专属名片',
+  heroDescription: '创建可分享的 Agent 资料页，在 README 中嵌入徽章，让更多 Agent 和开发者发现你。',
+  heroButton: '免费创建名片',
+  howItWorks: '如何使用',
+  step1Title: '创建',
+  step1Desc: '填写 Agent 信息，或直接导入 A2A Agent Card JSON。',
+  step2Title: '分享',
+  step2Desc: '获取公开链接和可嵌入 README 的徽章。',
+  step3Title: '被发现',
+  step3Desc: '其他 Agent 和开发者通过你的名片找到你。',
+
+  // Create page
+  createPageTitle: '创建 Agent 名片',
+  tabManual: '手动填写',
+  tabImport: '导入 JSON',
+  importLabel: '粘贴 A2A Agent Card JSON',
+  importButton: '导入并填充表单',
+  invalidJson: 'JSON 格式无效，请粘贴有效的 A2A Agent Card JSON。',
+  agentName: 'Agent 名称',
+  slug: '标识符 (Slug)',
+  provider: '提供者',
+  description: '描述',
+  descriptionPlaceholder: '你的 Agent 做什么？',
+  protocols: '协议',
+  a2aEndpoint: 'A2A 端点',
+  mcpEndpoint: 'MCP 端点',
+  apiEndpoint: 'API 端点',
+  capabilities: '能力',
+  tags: '标签',
+  commaSeparated: '逗号分隔',
+  pricing: '定价',
+  selectPricing: '选择定价...',
+  free: '免费',
+  freemium: '免费增值',
+  paid: '付费',
+  enterprise: '企业版',
+  noPricing: '未定价',
+  website: '网站',
+  github: 'GitHub',
+  publishing: '发布中...',
+  publishCard: '发布名片',
+  livePreview: '实时预览',
+  yourAgent: '你的 Agent',
+  nameRequired: 'Agent 名称不能为空',
+  slugRequired: '标识符不能为空',
+  selectProtocol: '至少选择一个协议',
+  networkError: '网络错误，请重试。',
+  by: '来自',
+
+  // Success page
+  cardIsLive: '你的 Agent 名片已上线！',
+  saveEditToken: '保存编辑令牌',
+  saveEditTokenDesc: '这是日后编辑名片的唯一方式。请妥善保存——令牌无法找回。',
+  loading: '(加载中...)',
+  copyToken: '复制令牌',
+  copied: '已复制！',
+  copyEditLink: '复制编辑链接',
+  savedNext: '已保存，下一步',
+  embedBadge: '嵌入徽章',
+  embedBadgeDesc: '将以下代码添加到 README 中，展示你的 Agent 身份。',
+  copyMarkdown: '复制 Markdown',
+  next: '下一步',
+  allSet: '全部完成！',
+  allSetDesc: '你的 Agent 名片已上线，可被发现。分享给全世界吧。',
+  viewCard: '查看名片',
+  createAnother: '再创建一个',
+
+  // Agent page
+  agentNotFound: '未找到 Agent',
+  agentCardOn: '的 AgentID 名片',
+  endpoints: '端点',
+  embedBadgeReadme: '在 README 中嵌入此徽章',
+  createOwnCard: '创建你自己的 Agent 名片',
+
+  // Edit page
+  editTokenRequired: '需要编辑令牌',
+  editTokenRequiredDesc: '要编辑此名片，请使用创建时收到的编辑链接。链接中包含编辑令牌。',
+  editFormat: '格式：',
+  name: '名称',
+  saving: '保存中...',
+  saveChanges: '保存修改',
+  cardUpdated: '名片更新成功！',
+  agentNotFoundEdit: '未找到 Agent',
+  doesntExist: '此 Agent 尚不存在。',
+  failedToLoad: '加载 Agent 失败',
+  failedToUpdate: '更新失败',
+  editTokenRequiredError: '需要编辑令牌。请使用创建名片时收到的编辑链接。',
+
+  // 404
+  notFoundTitle: '404',
+  notFoundDesc: '此 Agent 还没有名片。',
+  claimIt: '去创建一张',
+}
+
+const dictionaries = { en, zh } as const
+
+export function getDictionary(locale: Locale) {
+  return dictionaries[locale] || dictionaries.en
+}
