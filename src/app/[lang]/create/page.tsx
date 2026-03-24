@@ -26,7 +26,7 @@ function generateAvatarColor(slug: string): string {
   return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`
 }
 
-type Tab = 'manual' | 'import'
+type Tab = 'manual' | 'import' | 'import-url'
 
 export default function CreatePage() {
   const router = useRouter()
@@ -54,6 +54,8 @@ export default function CreatePage() {
   const [website, setWebsite] = useState('')
   const [github, setGithub] = useState('')
   const [jsonInput, setJsonInput] = useState('')
+  const [urlInput, setUrlInput] = useState('')
+  const [fetchingUrl, setFetchingUrl] = useState(false)
 
   const PRICING_OPTIONS = [
     { value: '', label: t.selectPricing },
@@ -76,26 +78,68 @@ export default function CreatePage() {
     )
   }, [])
 
+  const fillFormFromAgentCard = useCallback((data: Record<string, unknown>) => {
+    const card = (data.card || data) as Record<string, unknown>
+    if (card.name) setName(card.name as string)
+    if (card.description) setDescription(card.description as string)
+    if ((card.provider as Record<string, unknown>)?.organization) {
+      setProvider((card.provider as Record<string, unknown>).organization as string)
+    } else if (typeof card.provider === 'string') {
+      setProvider(card.provider)
+    }
+    if (card.url) setA2aEndpoint(card.url as string)
+    if (card.capabilities || card.skills) {
+      setProtocols((prev) => prev.includes('A2A') ? prev : [...prev, 'A2A'])
+    }
+    if (card.skills && Array.isArray(card.skills)) {
+      const skillNames = (card.skills as Array<{ name?: string; id?: string }>)
+        .map((s) => s.name || s.id || '')
+        .filter(Boolean)
+      if (skillNames.length) setCapabilities(skillNames.join(', '))
+    }
+    if (card.defaultInputModes || card.defaultOutputModes) {
+      // A2A v2 specific fields - already handled by setting A2A protocol
+    }
+    setSlugManuallyEdited(false)
+    setTab('manual')
+    setError('')
+  }, [])
+
   const handleJsonImport = useCallback(() => {
     try {
       const parsed = JSON.parse(jsonInput)
-      const card = parsed.card || parsed
-      if (card.name) setName(card.name)
-      if (card.description) setDescription(card.description)
-      if (card.provider?.organization) setProvider(card.provider.organization)
-      if (card.url) setA2aEndpoint(card.url)
-      if (card.capabilities?.streaming || card.capabilities) {
-        setProtocols(['A2A'])
-      }
-      if (card.skills) {
-        setCapabilities(card.skills.map((s: { name: string }) => s.name).join(', '))
-      }
-      setTab('manual')
-      setError('')
+      fillFormFromAgentCard(parsed)
     } catch {
       setError(t.invalidJson)
     }
-  }, [jsonInput, t.invalidJson])
+  }, [jsonInput, t.invalidJson, fillFormFromAgentCard])
+
+  const handleUrlImport = useCallback(async () => {
+    if (!urlInput.trim()) return
+    setError('')
+    setFetchingUrl(true)
+    try {
+      const res = await fetch('/api/fetch-agent-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      })
+      const result = await res.json()
+      if (!res.ok) {
+        setError(result.error || t.importUrlError)
+        return
+      }
+      fillFormFromAgentCard(result.data)
+      // Set the source URL as the A2A endpoint if not already set
+      if (!result.data?.url && result.source_url) {
+        setA2aEndpoint(result.source_url)
+      }
+    } catch {
+      setError(t.importUrlError)
+    } finally {
+      setFetchingUrl(false)
+    }
+  }, [urlInput, t.importUrlError, fillFormFromAgentCard])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,6 +223,14 @@ export default function CreatePage() {
           {t.tabManual}
         </button>
         <button
+          onClick={() => setTab('import-url')}
+          className={`rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'import-url' ? 'bg-white text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)]'
+          }`}
+        >
+          {t.tabImportUrl}
+        </button>
+        <button
           onClick={() => setTab('import')}
           className={`rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium transition-colors ${
             tab === 'import' ? 'bg-white text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-secondary)]'
@@ -188,7 +240,36 @@ export default function CreatePage() {
         </button>
       </div>
 
-      {tab === 'import' ? (
+      {tab === 'import-url' ? (
+        <div className="mb-8 max-w-xl">
+          <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">
+            {t.importUrlLabel}
+          </label>
+          <p className="mb-3 text-sm text-[var(--color-text-secondary)]">
+            {lang === 'zh'
+              ? '粘贴 A2A Agent Card 的 URL，我们会自动获取信息并填充表单。'
+              : 'Paste the URL of an A2A Agent Card endpoint. We\'ll fetch the data and fill the form for you.'}
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder={t.importUrlPlaceholder}
+              className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 font-mono text-sm focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleUrlImport() } }}
+            />
+            <button
+              onClick={handleUrlImport}
+              disabled={fetchingUrl || !urlInput.trim()}
+              className="shrink-0 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
+            >
+              {fetchingUrl ? t.importUrlFetching : t.importUrlButton}
+            </button>
+          </div>
+          {error && <p className="mt-2 text-sm text-[var(--color-error)]">{error}</p>}
+        </div>
+      ) : tab === 'import' ? (
         <div className="mb-8">
           <label className="mb-2 block text-sm font-medium text-[var(--color-primary)]">
             {t.importLabel}

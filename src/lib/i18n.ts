@@ -103,6 +103,15 @@ const en = {
   notFoundDesc: "This agent doesn't have a card yet.",
   claimIt: 'Claim It — Create a Card',
 
+  // Import URL
+  tabImportUrl: 'Import from URL',
+  importUrlLabel: 'A2A Agent Card URL',
+  importUrlPlaceholder: 'https://example.com/.well-known/agent.json',
+  importUrlButton: 'Fetch & Fill',
+  importUrlFetching: 'Fetching...',
+  importUrlSuccess: 'Agent card imported successfully!',
+  importUrlError: 'Could not fetch agent card from this URL.',
+
   // Directory page
   directory: 'Directory',
   directoryTitle: 'Agent Directory',
@@ -215,6 +224,15 @@ const zh: typeof en = {
   notFoundTitle: '404',
   notFoundDesc: '此 Agent 还没有名片。',
   claimIt: '去创建一张',
+
+  // Import URL
+  tabImportUrl: '从 URL 导入',
+  importUrlLabel: 'A2A Agent Card URL',
+  importUrlPlaceholder: 'https://example.com/.well-known/agent.json',
+  importUrlButton: '获取并填充',
+  importUrlFetching: '获取中...',
+  importUrlSuccess: 'Agent Card 导入成功！',
+  importUrlError: '无法从此 URL 获取 Agent Card。',
 
   // Directory page
   directory: '目录',
